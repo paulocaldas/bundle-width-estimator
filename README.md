@@ -15,3 +15,5 @@ Code: <br>
       
       movie_to_analyze = 'path\filename.tif'
       bundle_width_estimation(movie_to_analyze, time_per_frame = 2, pixel_size = 0.108, save_files=True);
+
+# time_per_frame (sec); pixel_size (microns)
