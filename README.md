@@ -11,7 +11,7 @@ Approach: <br>
 
 Code: <br>
 (i) Run the 'bundle_width_estimator_script' to set all the modules and functions <br>
-(ii) Analyze time-lapse and set the experimental parameters <br>
+(ii) Select a time-lapse and set the experimental parameters: <br>
       
       movie_to_analyze = 'path\filename.tif'
       bundle_width_estimation(movie_to_analyze, time_per_frame = 2, pixel_size = 0.108, save_files=True);
