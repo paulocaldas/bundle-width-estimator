@@ -10,7 +10,7 @@ Approach: <br>
 (iv) The mean bundle width for every frame of the movie is calculated by identifying the peak intensities for each line and column of the image. This value is then plotted as a function of time. <br>
 
 Code: <br>
-(i) Run the bundle_width_estimator_script to set all the modules and functions <br>
+(i) Run the 'bundle_width_estimator_script' to set all the modules and functions <br>
 (ii) Analyze time-lapse and set the experimental parameters <br>
       
       movie_to_analyze = 'path\filename.tif'
