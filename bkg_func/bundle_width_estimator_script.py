@@ -83,8 +83,8 @@ def analyze_movie(filename, time_per_frame, cutoff = -1, step = 10, pixel_size =
         
         fig, ax = plt.subplots(1, 3, figsize = (10,5), dpi = 120)
         ax[0].imshow(frame_to_show); ax[0].set_title('original image (frame '+ str(int(len(mov)/2)) + ')', fontsize = 8);ax[0].axis('off')
-        ax[1].imshow(img_EDM); ax[1].set_title('threshold + denoise', fontsize = 8);ax[1].axis('off')
-        ax[2].imshow(img_denoised); ax[2].set_title('EDM', fontsize = 8 );ax[2].axis('off');
+        ax[1].imshow(img_denoised); ax[1].set_title('threshold + denoise', fontsize = 8);ax[1].axis('off')
+        ax[2].imshow(img_EDM); ax[2].set_title('EDM', fontsize = 8 );ax[2].axis('off');
         
     # save values in organized tables
     
@@ -139,6 +139,6 @@ def analyze_movie(filename, time_per_frame, cutoff = -1, step = 10, pixel_size =
     plt.subplots_adjust(wspace = 0.3)
       
     # and save plots!
-    plt.savefig(filename +'_Bundle_width_results.png', bbox_inches="tight", transparent = True)
+    plt.savefig(filename +'_Bundle_width_results.png', bbox_inches="tight", dpi = 300, transparent = True)
     
     return bundle_width_table, hists
