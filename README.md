@@ -1,4 +1,4 @@
-# Bundle Width of Filament Networks
+# bundle width estimator for crowded filament networks
 
 Evaluate the mean bundle width of protein filaments is not always a trivial task. For instance, cytoskeleton filaments tend to form networks of overlapping filaments creating an extremely crowded environment. The absolute value of bundle width is virtually impossible to estimate from simple confocal images. To get an approximation of the value without increasing the complexity of my experimental setup, we use an image segmentation approach followed by distance mapping. On a first approach we implemented this procedure by using a combination of multiple ImageJ plugins and a home-built matlab scipt. Here, I combined all the steps of that routine into a single python script.
 Regardless of the true absolute value for bundlw width, this estimation is robust enough to compare amongst samples width a different bundle degree.
