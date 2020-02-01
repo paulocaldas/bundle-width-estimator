@@ -1,20 +1,24 @@
-# bundle width estimator for crowded filament networks
+## bundle width estimator for crowded filament networks
 
-Evaluate the mean bundle width of protein filaments is not always a trivial task. For instance, cytoskeleton filaments tend to form networks of overlapping filaments creating an extremely crowded environment. The absolute value of bundle width is virtually impossible to estimate from simple confocal images. To get an approximation of the value without increasing the complexity of my experimental setup, we use an image segmentation approach followed by distance mapping. On a first approach we implemented this procedure by using a combination of multiple ImageJ plugins and a home-built matlab scipt. Here, I combined all the steps of that routine into a single python script.
-Regardless of the true absolute value for bundlw width, this estimation is robust enough to compare amongst samples width a different bundle degree.
+Proteins like FtsZ, form networks of filament bundles in vitro. These networks of overllaping filaments tend to be extremely crowded, wich makes the measuement of bundle widths extremely challenging. Even though the absolute value of bundle width is virtually impossible to estimate from simple confocal images, we can apply a simple approach to estimate the apparent bundle widthcombining image segmentation and Eucleadean distance mapping. 
 
-Approach: <br>
-(i) Fluorescence images are binarized using an adaptive threshold. This corrects for non-homogeneous background intensities, overcoming the limitation of conventional threshold methods; <br>
+### Approach: <br>
+(i) Fluorescence images are binarized using an adaptive threshold; <br>
 (ii) binarized time-lapse movies are then processed with a denoise filter to remove small particles; <br>
 (iii) The Euclidean Distance Map (EDM) is calculated for every frame. This transformation results in a grey scale image, where the grey value of each pixel represents the shortest distance to the nearest pixel in the background. Accordingly, bundle widths correspond to the local peak intensities multiplied by 2. <br>
 (iv) The mean bundle width for every frame of the movie is calculated by identifying the peak intensities for each line and column of the image. This value is then plotted as a function of time. <br>
 
-Code: <br>
-(i) Run the 'bundle_width_estimator_script' to set all the modules and functions <br>
-(ii) Select a time-lapse and set the experimental parameters: <br>
-      
-      movie_to_analyze = 'path\filename.tif'
-      bundle_width_estimation(movie_to_analyze, time_per_frame = 2, pixel_size = 0.108, save_files=True);
+Instructions: <br>
+Simply open the `jupyther` notebook, insert file_name and run the function with the appropriate parameters.
 
-      # time_per_frame (sec) & pixel_size (microns) 
-      # save_files: final figure as pdf and dataset as txt (filename dir)
+- `filename`: tif movie to analzye (path/to/filename)
+- `time_per_frame`: in seconds
+- `cutoff`: set to -1 to analyze the whole movie
+- `step`: frame interval
+- `pixel_size`: in microns
+- `show_images`: `True` to show pre-processed images as example
+- `save_files`: `True` to save final results as txt tables
+
+#### and requires this package
+- `ipywidgets` <br>
+(open anaconda prompt and write `pip install ipywidgets`)      
