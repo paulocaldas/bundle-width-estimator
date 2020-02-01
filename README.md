@@ -19,6 +19,6 @@ Simply open the `jupyther` notebook, insert file_name and run the function with 
 - `show_images`: `True` to show pre-processed images as example
 - `save_files`: `True` to save final results as txt tables
 
-#### and requires this package
+#### requires this extra package
 - `ipywidgets` <br>
 (open anaconda prompt and write `pip install ipywidgets`)      
