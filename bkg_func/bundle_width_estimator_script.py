@@ -1,26 +1,29 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-%matplotlib inline
+
 from skimage import filters, color, io
 from scipy.ndimage import median_filter, distance_transform_edt
 from scipy.signal import argrelextrema
+
 # extra packages for a progress bar
 from ipywidgets import FloatProgress
 from IPython.display import display
 
 
 def eucledean_distance_map(img, thresh_block_size = 21, denoise_level = 9):
-    
+    '''creates an Eucledean distance map for an input image'''
     img_gray = color.rgb2gray(img) #convert to gray scale
-    adaptive_thresh = filters.threshold_local(img_gray, block_size = thresh_block_size, offset=0) # sets the thershold values ...
+    adaptive_thresh = filters.threshold_local(img_gray, block_size = thresh_block_size, offset=0) # sets the thershold values    img_gray_thres = img_gray > adaptive_thresh # applies the threshold values
     img_gray_thres = img_gray > adaptive_thresh # applies the threshold values
     img_denoise = median_filter(img_gray_thres, size = denoise_level) # reduce image noise by despeckle
-    img_dist = distance_transform_edt(img_denoise) # estimate eucldean distance to the closest dark pixel
-    return img_dist
+    img_EDM = distance_transform_edt(img_denoise) # estimate eucldean distance to the closest dark pixel
+    return img_EDM, img_denoise
 
-def bundle_width(img_EDM, pixel_size): #takes eucledean distance map as input and pixel size in microns
-
+def find_peaks_to_bundle_width(img_EDM, pixel_size): 
+    '''finds the peak intensity of all lines and columns on the EDM image
+       and returns the distribution of values, the mean and std pixel_size: in microns'''
+    
     peaks = [] #empty list to save all the peaks for each line and each column
 
     for line in range(img_EDM.shape[0]):
@@ -37,45 +40,54 @@ def bundle_width(img_EDM, pixel_size): #takes eucledean distance map as input an
     # width is equal to peak distance * 2
     
     width_dist = pd.Series(np.concatenate(peaks)).dropna() * pixel_size * 2
-    
     width_mean = np.mean(width_dist)
     width_std = np.std(width_dist)
         
     return width_mean, width_std, width_dist
 
-def bundle_width_estimation(filename, time_per_frame, cutoff = -1, step = 10, pixel_size = 1, save_files = False):
+def analyze_movie(filename, time_per_frame, cutoff = -1, step = 10, pixel_size = 1, show_images = True, save_files = False):
     ''' filename: path/filename of the movie to analyze; time_per_frame: in seconds; 
         cutoff: run analysis up to this frame number, runs for the whole movie by default (-1);
-        step: frame interval to analyze instead of every frame
-        pixel_size: in microns, equals to 1 micron by default (dummy calibration);
-        save_files: save final tables as txt'''
+        step: frame interval to analyze (every frame is time consuming)
+        pixel_size: in microns (1 micron by default - dummy calibration);
+        show_images: show a pre-processed frame as example
+        save_files: True to save final results as txt'''
     
     mov = io.imread(filename)
     mov = mov[ :cutoff:step]
 
-    means = []  # to save bundles means
-    stds  = []  # to save std
-    sems  = []
-    hists = []  # to save all histograms
+    means = []  # list to save means from different frames
+    stds  = []  # list to save std from different frames
+    sems  = []  # list to save sems (std/sqrt(n)) from different frames
+    hists = []  # list to save all histograms from different frames
 
-    # to build a progress bar // fancy!
+    # build a progress bar // fancy!
     bar = FloatProgress(description = 'Processing ...', bar_style= 'info', max = mov.shape[0])
     display(bar)
 
     for frame in mov:
-        processed_image = eucledean_distance_map(frame) # pre-processed function defined above
-        mean, std, histogram = bundle_width(processed_image, pixel_size) # function defined above
+        img_EDM, img_denoised = eucledean_distance_map(frame) # pre-processed function defined above
+        mean, std, histogram = find_peaks_to_bundle_width(img_EDM, pixel_size) # function defined above
 
         means.append(mean)
         stds.append(std)
-        sems.append(std/len(histogram))
+        sems.append(std/np.sqrt(len(histogram)))
         hists.append(histogram)
         
         bar.value += 1
-        
-    print('Done! Yay!')
     
-    # SAVE VALUES
+    # show the pre-processing images if needed
+    if show_images == True:     
+        frame_to_show = mov[int(len(mov)/2)] #show the frame at the middle of the movie as example 
+        img_EDM, img_denoised = eucledean_distance_map(frame_to_show) # pre-processed function defined above
+        
+        fig, ax = plt.subplots(1, 3, figsize = (10,5), dpi = 120)
+        ax[0].imshow(frame_to_show); ax[0].set_title('original image (frame '+ str(int(len(mov)/2)) + ')', fontsize = 8);ax[0].axis('off')
+        ax[1].imshow(img_EDM); ax[1].set_title('threshold + denoise', fontsize = 8);ax[1].axis('off')
+        ax[2].imshow(img_denoised); ax[2].set_title('EDM', fontsize = 8 );ax[2].axis('off');
+        
+    # save values in organized tables
+    
     time_array = np.array(range(0,len(mov))) * time_per_frame * step
     
     hists = pd.DataFrame(hists).T # all histograms as a data frame, each column = one time point in seconds 
@@ -85,28 +97,29 @@ def bundle_width_estimation(filename, time_per_frame, cutoff = -1, step = 10, pi
     bundle_width_table.columns = ['time','bundle_mean','bundle_std', 'bundle_sem']
     
     if save_files == True:
-        bundle_width_table.to_csv(str(filename)[:-4] + '_Bundle_Width_Table.txt', index=False)
-        hists.to_csv(str(filename)[:-4] + '_All_Histograms.txt', index = False)
-    
+        bundle_width_table.to_csv(str(filename)[:-4] + '_bundle_width_table.txt', index=False)
+        hists.to_csv(str(filename)[:-4] + '_all_histograms.txt', index = False)
+        print('results saved as txt in same dir')
+        
     time  = bundle_width_table.time
     means = bundle_width_table.bundle_mean
     stds  = bundle_width_table.bundle_std
     sems  = bundle_width_table.bundle_sem
+
+    # plot mean bundle width over time
     
-    # PLOT FINAL RESULTS
-    
-    plt.figure(figsize = (8,3), dpi = 200)
+    plt.figure(figsize = (8,3), dpi = 120)
     plt.subplot(1,2,1)
-    plt.errorbar(time, means, color = 'darkblue', lw = 2, label = 'Mean')
-    plt.fill_between(time, means - std, means + std, #define upper and lower error
+    plt.errorbar(time, means, color = 'darkblue', lw = 2, label = 'mean')
+    plt.fill_between(time, means - stds, means + stds, #define upper and lower error
                  color = 'blue', alpha=0.1, label = 'std');
 
-    plt.xlabel('Time (s)', fontsize=12)
-    plt.ylabel('Bundle width ($\mu$m)', fontsize=12)
+    plt.xlabel('time (s)', fontsize = 10)
+    plt.ylabel('bundle width ($\mu$m)', fontsize = 10)
     plt.tick_params(direction = 'in', top = False, right = False)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
-    plt.legend(frameon = False)
+    plt.xticks(fontsize = 10)
+    plt.yticks(fontsize = 10)
+    plt.legend(frameon  = True, fontsize = 8)
           
     # plot all histograms 
     
@@ -115,16 +128,17 @@ def bundle_width_estimation(filename, time_per_frame, cutoff = -1, step = 10, pi
     nCurves = 0
     for col in hists:
         nCurves = nCurves + 1
-        counts, bins = np.histogram(hists[col].dropna(), normed = True) # how to iterate over columns in pandas
+        counts, bins = np.histogram(hists[col].dropna(), density = True) # how to iterate over columns in pandas
         plt.plot(bins[:-1], counts, '-', lw = 0.5, color = plt.cm.Blues(nCurves*10))
 
-    plt.xlabel('Bundle width ($\mu$m)', fontsize=12)
-    plt.ylabel('PDF', fontsize=12)
+    plt.xlabel('bundle width ($\mu$m)', fontsize = 10)
+    plt.ylabel('PDF', fontsize = 10)
     plt.tick_params(direction = 'in', top = False, right = False)
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12);
+    plt.xticks(fontsize = 10)
+    plt.yticks(fontsize = 10);
     plt.subplots_adjust(wspace = 0.3)
-    
+      
+    # and save plots!
     plt.savefig(filename +'_Bundle_width_results.png', bbox_inches="tight", transparent = True)
     
     return bundle_width_table, hists
