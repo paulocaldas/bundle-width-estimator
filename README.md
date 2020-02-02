@@ -1,6 +1,8 @@
 ## Bundle width estimator for crowded filament networks
 
-Proteins like FtsZ, form networks of filament bundles in vitro. These networks of overlaping filaments tend to be extremely crowded, wich makes the measurement of bundle widths and lengths extremely challenging. Even though the absolute width value of these kind of bundles is virtually impossible to estimate from simple confocal images, we came up with a simple approach to estimate the apparent bundle width combining image segmentation and Eucleadean distance mapping.
+Proteins like FtsZ, form networks of filament bundles in vitro. These networks of overlaping filaments tend to be extremely crowded, wich makes the measurement of bundle widths and lengths extremely challenging. Even though the absolute width value of these kind of bundles is virtually impossible to estimate from simple confocal images, we came up with a simple approach to estimate the apparent bundle width combining image segmentation and Eucleadean distance mapping. <br>
+This approach was implemented here:
+https://www.nature.com/articles/s41467-019-13702-4 <br>
 
 ### Approach: <br>
 (i) Fluorescence images are binarized using an adaptive threshold with a block size of 21 pixels; <br>
