@@ -9,7 +9,7 @@ Proteins like FtsZ, form networks of filament bundles in vitro. These networks o
 (iv) The mean bundle width for every frame of the movie is calculated by identifying the peak intensities for each line and column of the image. This value is then plotted as a function of time. All peak distributions are plotted as a function of time (histogram, light to dark blue). Tables and plots are saved in the same directory of the selected movie. <br>
 
 ### Instructions: <br>
-Simply open the `jupyther` notebook 'bundle_width_estimator`, insert file_name and run the function with the appropriate parameters.
+Simply open the `jupyther` notebook `bundle_width_estimator.ipynb`, insert file_name and run the function with the appropriate parameters.
 
 - `filename`: tif movie to analzye (path/to/filename)
 - `time_per_frame`: in seconds
